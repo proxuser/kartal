@@ -5350,7 +5350,6 @@ static void migrate_tasks(unsigned int dead_cpu)
 	 * loop forever here.
 	 * So we forcefully unthrottle the rt rq.
 	 */
-	unthrottle_rt_rq(rq);
 
 	for ( ; ; ) {
 		/*
