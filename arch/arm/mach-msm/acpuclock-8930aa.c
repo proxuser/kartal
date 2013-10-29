@@ -22,6 +22,10 @@
 #include "acpuclock.h"
 #include "acpuclock-krait.h"
 
+//KT Specifics
+// enable_oc
+static unsigned int isenable_oc = 0;
+
 /* Corner type vreg VDD values */
 #define LVL_NONE	RPM_VREG_CORNER_NONE
 #define LVL_LOW		RPM_VREG_CORNER_LOW
@@ -207,6 +211,43 @@ static struct acpuclk_krait_params acpuclk_8930aa_params __initdata = {
 	.stby_khz = 384000,
 };
 
+unsigned int get_enable_oc(void)
+{
+	return isenable_oc;
+}
+
+static ssize_t show_enable_oc(struct kobject *kobj,
+				     struct attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", isenable_oc);
+}
+
+static ssize_t store_enable_oc(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+{
+	unsigned int ret = -EINVAL;
+	unsigned int value = 0;
+
+	ret = sscanf(buf, "%u", &value);
+	if (ret != 1)
+		return -EINVAL;
+
+	isenable_oc = value;
+	return count;
+}
+
+static struct global_attr enable_oc_attr = __ATTR(enable_oc, 0666, show_enable_oc, store_enable_oc);
+
+static struct attribute *acpuclock8930aa_attributes[] = {
+	&enable_oc_attr.attr,
+	NULL,
+};
+
+static struct attribute_group acpuclock8930aa_attr_group = {
+	.attrs = acpuclock8930aa_attributes,
+	.name = "ktoonsez",
+};
+
 static int __init acpuclk_8930aa_probe(struct platform_device *pdev)
 {
 	return acpuclk_krait_init(&pdev->dev, &acpuclk_8930aa_params);
@@ -221,6 +262,10 @@ static struct platform_driver acpuclk_8930aa_driver = {
 
 static int __init acpuclk_8930aa_init(void)
 {
+	int rc;
+	rc = sysfs_create_group(cpufreq_global_kobject,
+				&acpuclk_8930aa_attr_group);
+
 	return platform_driver_probe(&acpuclk_8930aa_driver,
 				     acpuclk_8930aa_probe);
 }
