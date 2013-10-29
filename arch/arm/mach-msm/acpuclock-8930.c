@@ -262,13 +262,13 @@ static ssize_t store_enable_oc(struct kobject *kobj,
 
 static struct global_attr enable_oc_attr = __ATTR(enable_oc, 0666, show_enable_oc, store_enable_oc);
 
-static struct attribute *acpuclock8930_attributes[] = {
+static struct attribute *acpuclk_8930_attributes[] = {
 	&enable_oc_attr.attr,
 	NULL,
 };
 
-static struct attribute_group acpuclock8930_attr_group = {
-	.attrs = acpuclock8930_attributes,
+static struct attribute_group acpuclk_8930_attr_group = {
+	.attrs = acpuclk_8930_attributes,
 	.name = "ktoonsez",
 };
 
