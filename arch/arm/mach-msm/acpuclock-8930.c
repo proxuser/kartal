@@ -22,10 +22,6 @@
 #include "acpuclock.h"
 #include "acpuclock-krait.h"
 
-//KT Specifics
-// enable_oc
-static unsigned int isenable_oc = 0;
-
 /* Corner type vreg VDD values */
 #define LVL_NONE	RPM_VREG_CORNER_NONE
 #define LVL_LOW		RPM_VREG_CORNER_LOW
@@ -57,7 +53,7 @@ static struct scalable scalable_pm8917[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x4501,
-		.vreg[VREG_CORE] = { "krait0", MAX_VDD_SC },
+		.vreg[VREG_CORE] = { "krait0", 1350000 },
 		.vreg[VREG_MEM]  = { "krait0_mem", 1150000 },
 		.vreg[VREG_DIG]  = { "krait0_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait0_s8", 2050000 },
@@ -69,7 +65,7 @@ static struct scalable scalable_pm8917[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x5501,
-		.vreg[VREG_CORE] = { "krait1", MAX_VDD_SC },
+		.vreg[VREG_CORE] = { "krait1", 1350000 },
 		.vreg[VREG_MEM]  = { "krait1_mem", 1150000 },
 		.vreg[VREG_DIG]  = { "krait1_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait1_s8", 2050000 },
@@ -93,7 +89,7 @@ static struct scalable scalable[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x4501,
-		.vreg[VREG_CORE] = { "krait0", 1300000 },
+		.vreg[VREG_CORE] = { "krait0", 1350000 },
 		.vreg[VREG_MEM]  = { "krait0_mem", 1150000 },
 		.vreg[VREG_DIG]  = { "krait0_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait0_hfpll", 1800000 },
@@ -104,7 +100,7 @@ static struct scalable scalable[] __initdata = {
 		.aux_clk_sel = 3,
 		.sec_clk_sel = 2,
 		.l2cpmr_iaddr = 0x5501,
-		.vreg[VREG_CORE] = { "krait1", 1300000 },
+		.vreg[VREG_CORE] = { "krait1", 1350000 },
 		.vreg[VREG_MEM]  = { "krait1_mem", 1150000 },
 		.vreg[VREG_DIG]  = { "krait1_dig", 1150000 },
 		.vreg[VREG_HFPLL_A] = { "krait1_hfpll", 1800000 },
@@ -235,43 +231,6 @@ static struct acpuclk_krait_params acpuclk_8930_params __initdata = {
 	.stby_khz = 384000,
 };
 
-unsigned int get_enable_oc(void)
-{
-	return isenable_oc;
-}
-
-static ssize_t show_enable_oc(struct kobject *kobj,
-				     struct attribute *attr, char *buf)
-{
-	return sprintf(buf, "%d\n", isenable_oc);
-}
-
-static ssize_t store_enable_oc(struct kobject *kobj,
-			struct attribute *attr, const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int value = 0;
-
-	ret = sscanf(buf, "%u", &value);
-	if (ret != 1)
-		return -EINVAL;
-
-	isenable_oc = value;
-	return count;
-}
-
-static struct global_attr enable_oc_attr = __ATTR(enable_oc, 0666, show_enable_oc, store_enable_oc);
-
-static struct attribute *acpuclk_8930_attributes[] = {
-	&enable_oc_attr.attr,
-	NULL,
-};
-
-static struct attribute_group acpuclk_8930_attr_group = {
-	.attrs = acpuclk_8930_attributes,
-	.name = "ktoonsez",
-};
-
 static int __init acpuclk_8930_probe(struct platform_device *pdev)
 {
 	struct acpuclk_platform_data *pdata = pdev->dev.platform_data;
@@ -290,9 +249,6 @@ static struct platform_driver acpuclk_8930_driver = {
 
 static int __init acpuclk_8930_init(void)
 {
-	int rc;
-	rc = sysfs_create_group(cpufreq_global_kobject,
-				&acpuclk_8930_attr_group);
 
 	return platform_driver_probe(&acpuclk_8930_driver,
 				     acpuclk_8930_probe);
