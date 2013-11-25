@@ -438,6 +438,21 @@ static int msm_dai_q6_cdc_hw_params(struct snd_pcm_hw_params *params,
 		break;
 	}
 	dai_data->rate = params_rate(params);
+
+	switch (params_format(params)) {
+	case SNDRV_PCM_FORMAT_S16_LE:
+	case SNDRV_PCM_FORMAT_SPECIAL:
+		dai_data->port_config.i2s.bit_width = 16;
+		dai_data->bitwidth = 16;
+		break;
+	case SNDRV_PCM_FORMAT_S24_LE:
+		dai_data->port_config.i2s.bit_width = 24;
+		dai_data->bitwidth = 24;
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	dai_data->port_config.i2s.sample_rate = dai_data->rate;
 	dai_data->port_config.i2s.i2s_cfg_minor_version =
 						AFE_API_VERSION_I2S_CONFIG;
@@ -808,7 +823,7 @@ static int msm_dai_q6_dai_remove(struct snd_soc_dai *dai)
 static struct snd_soc_dai_driver msm_dai_q6_slimbus_1_rx_dai = {
 	.playback = {
 		.rates = SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000,
-		.formats = SNDRV_PCM_FMTBIT_S16_LE,
+		.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE,
 		.channels_min = 1,
 		.channels_max = 1,
 		.rate_min = 8000,
